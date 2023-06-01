@@ -23,13 +23,21 @@ public class GAg implements BranchPredictor {
     public GAg(int BHRSize, int SCSize) {
         // TODO : complete the constructor
         // Initialize the BHR register with the given size and no default value
-        this.BHR = null;
+        Bit[] defaultValue = new Bit[BHRSize];
+        for (int i = 0; i < BHRSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        this.BHR = new SIPORegister("Gag BHR", BHRSize, defaultValue);
 
         // Initialize the PHT with a size of 2^size and each entry having a saturating counter of size "SCSize"
-        PHT = null;
+        PHT = new PageHistoryTable(1<<BHRSize, SCSize);
 
         // Initialize the SC register
-        SC = null;
+        defaultValue = new Bit[SCSize];
+        for (int i = 0; i < SCSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        SC = new SIPORegister("GAg SC", SCSize, defaultValue);
     }
 
     /**
