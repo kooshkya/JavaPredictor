@@ -21,18 +21,21 @@ public class PAp implements BranchPredictor {
     }
 
     public PAp(int BHRSize, int SCSize, int branchInstructionSize) {
-        // TODO: complete the constructor
         this.branchInstructionSize = branchInstructionSize;
 
         // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = null;
+        PABHR = new RegisterBank(branchInstructionSize, BHRSize);
 
         // Initializing the PAPHT with BranchInstructionSize as PHT Selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PAPHT = null;
+        PAPHT = new PerAddressPredictionHistoryTable(branchInstructionSize, 1<<BHRSize, SCSize);
 
         // Initialize the SC register
-        SC = null;
+        Bit[] defaultValue = new Bit[SCSize];
+        for (int i = 0; i < SCSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        SC = new SIPORegister("PAg SC", SCSize, defaultValue);
     }
 
     @Override
