@@ -50,7 +50,7 @@ public class PAs implements BranchPredictor {
     public BranchResult predict(BranchInstruction branchInstruction) {
         ShiftRegister BHR = PABHR.read(branchInstruction.getInstructionAddress());
 
-        Bit[] PCSegment = branchInstruction.getInstructionAddress();
+        Bit[] PCSegment = CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, hashMode);
         Bit[] BHRSegment = CombinationalLogic.hash(BHR.read(), KSize, hashMode);
         Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
         for (int i = 0; i < key.length; i++) {
@@ -77,8 +77,8 @@ public class PAs implements BranchPredictor {
         Bit[] countResult = CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING);
         SC.load(countResult);
 
-        Bit[] PCSegment = instruction.getInstructionAddress();
-        Bit[] BHRSegment = CombinationalLogic.hash(BHR.read(), KSize, hashMode);
+        Bit[] PCSegment = CombinationalLogic.hash(instruction.getInstructionAddress(), KSize, hashMode);
+        Bit[] BHRSegment = BHR.read();
         Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
         for (int i = 0; i < key.length; i++) {
             if (i < PCSegment.length) {
