@@ -40,8 +40,27 @@ public class PAp implements BranchPredictor {
 
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
-        // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        ShiftRegister BHR = PABHR.read(branchInstruction.getInstructionAddress());
+
+        Bit[] PCSegment = branchInstruction.getInstructionAddress();
+        Bit[] BHRSegment = BHR.read();
+        Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
+        for (int i = 0; i < key.length; i++) {
+            if (i < PCSegment.length) {
+                key[i] = PCSegment[i];
+            } else {
+                key[i] = BHRSegment[i - PCSegment.length];
+            }
+        }
+
+        Bit[] defaultValue = new Bit[SC.getLength()];
+        for (int i = 0; i < SC.getLength(); i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        PAPHT.setDefault(key, defaultValue);
+        SC.load(PAPHT.get(key));
+        
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
