@@ -48,8 +48,27 @@ public class PAs implements BranchPredictor {
      */
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
-        // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        ShiftRegister BHR = PABHR.read(branchInstruction.getInstructionAddress());
+
+        Bit[] PCSegment = branchInstruction.getInstructionAddress();
+        Bit[] BHRSegment = CombinationalLogic.hash(BHR.read(), KSize, hashMode);
+        Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
+        for (int i = 0; i < key.length; i++) {
+            if (i < PCSegment.length) {
+                key[i] = PCSegment[i];
+            } else {
+                key[i] = BHRSegment[i - PCSegment.length];
+            }
+        }
+
+        Bit[] defaultValue = new Bit[SC.getLength()];
+        for (int i = 0; i < SC.getLength(); i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        PSPHT.setDefault(key, defaultValue);
+        SC.load(PSPHT.get(key));
+
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
