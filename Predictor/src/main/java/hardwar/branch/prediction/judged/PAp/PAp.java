@@ -59,13 +59,31 @@ public class PAp implements BranchPredictor {
         }
         PAPHT.setDefault(key, defaultValue);
         SC.load(PAPHT.get(key));
-        
+
         return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
         // TODO:complete Task 2
+        ShiftRegister BHR = PABHR.read(instruction.getInstructionAddress());
+        Bit[] countResult = CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING);
+        SC.load(countResult);
+
+        Bit[] PCSegment = instruction.getInstructionAddress();
+        Bit[] BHRSegment = BHR.read();
+        Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
+        for (int i = 0; i < key.length; i++) {
+            if (i < PCSegment.length) {
+                key[i] = PCSegment[i];
+            } else {
+                key[i] = BHRSegment[i - PCSegment.length];
+            }
+        }
+        PAPHT.put(key, SC.read());
+
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
+        PABHR.write(instruction.getInstructionAddress(), BHR.read());
     }
 
 
