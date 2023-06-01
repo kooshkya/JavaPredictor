@@ -21,7 +21,6 @@ public class GAg implements BranchPredictor {
      * @param SCSize  the size of the register which hold the saturating counter value and the cache block size
      */
     public GAg(int BHRSize, int SCSize) {
-        // TODO : complete the constructor
         // Initialize the BHR register with the given size and no default value
         Bit[] defaultValue = new Bit[BHRSize];
         for (int i = 0; i < BHRSize; i++) {
@@ -48,8 +47,9 @@ public class GAg implements BranchPredictor {
      */
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
-        // TODO : complete Task 1
-        return BranchResult.NOT_TAKEN;
+        Bit[] BHRContent = BHR.read();
+        SC.load(PHT.get(BHRContent));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     /**
