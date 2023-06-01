@@ -20,20 +20,23 @@ public class PAs implements BranchPredictor {
     }
 
     public PAs(int BHRSize, int SCSize, int branchInstructionSize, int KSize, HashMode hashMode) {
-        // TODO: complete the constructor
-        this.branchInstructionSize = 0;
-        this.KSize = 0;
+        this.branchInstructionSize = branchInstructionSize;
+        this.KSize = KSize;
         this.hashMode = HashMode.XOR;
 
         // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = null;
+        PABHR = new RegisterBank(branchInstructionSize, BHRSize);
 
         // Initializing the PAPHT with K bit as PHT selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PSPHT = null;
+        PSPHT = new PerAddressPredictionHistoryTable(KSize, 1<<BHRSize, SCSize);
 
         // Initialize the saturating counter
-        SC = null;
+        Bit[] defaultValue = new Bit[SCSize];
+        for (int i = 0; i < SCSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        SC = new SIPORegister("PAg SC", SCSize, defaultValue);
     }
 
     /**
