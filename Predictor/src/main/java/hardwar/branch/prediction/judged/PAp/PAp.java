@@ -65,7 +65,6 @@ public class PAp implements BranchPredictor {
 
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
-        // TODO:complete Task 2
         ShiftRegister BHR = PABHR.read(instruction.getInstructionAddress());
         Bit[] countResult = CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING);
         SC.load(countResult);
