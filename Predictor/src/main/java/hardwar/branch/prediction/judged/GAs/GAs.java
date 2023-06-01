@@ -60,7 +60,6 @@ public class GAs implements BranchPredictor {
      */
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
-        // TODO: complete Task 1
         Bit[] PCSegment = CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, hashMode);
         Bit[] BHRSegment = BHR.read();
         Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
@@ -89,7 +88,21 @@ public class GAs implements BranchPredictor {
      */
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
-        // TODO: complete Task 2
+        Bit[] PCSegment = CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, hashMode);
+        Bit[] BHRSegment = BHR.read();
+        Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
+        for (int i = 0; i < key.length; i++) {
+            if (i < PCSegment.length) {
+                key[i] = PCSegment[i];
+            } else {
+                key[i] = BHRSegment[i - PCSegment.length];
+            }
+        }
+
+        Bit[] countResult = CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING);
+        SC.load(countResult);
+        PSPHT.put(key, SC.read());
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
     }
 
     /**
