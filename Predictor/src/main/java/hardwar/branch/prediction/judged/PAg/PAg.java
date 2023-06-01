@@ -23,15 +23,18 @@ public class PAg implements BranchPredictor {
      * @param branchInstructionSize the number of bits which is used for saving a branch instruction
      */
     public PAg(int BHRSize, int SCSize, int branchInstructionSize) {
-        // TODO: complete the constructor
         // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = null;
+        PABHR = new RegisterBank(branchInstructionSize, BHRSize);
 
         // Initialize the PHT with a size of 2^size and each entry having a saturating counter of size "SCSize"
-        PHT = null;
+        PHT = new PageHistoryTable(1<<BHRSize, SCSize);
 
         // Initialize the SC register
-        SC = null;
+        Bit[] defaultValue = new Bit[SCSize];
+        for (int i = 0; i < SCSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        SC = new SIPORegister("PAg SC", SCSize, defaultValue);
     }
 
     /**
