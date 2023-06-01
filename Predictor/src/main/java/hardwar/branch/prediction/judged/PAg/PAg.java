@@ -44,7 +44,14 @@ public class PAg implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction instruction) {
         // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        Bit[] BHRContent = PABHR.read(instruction.getInstructionAddress()).read();
+        Bit[] defaultValue = new Bit[SC.getLength()];
+        for (int i = 0; i < SC.getLength(); i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        PHT.setDefault(BHRContent, defaultValue);
+        SC.load(PHT.get(BHRContent));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     /**
