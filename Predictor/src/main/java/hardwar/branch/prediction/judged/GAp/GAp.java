@@ -25,17 +25,25 @@ public class GAp implements BranchPredictor {
      */
     public GAp(int BHRSize, int SCSize, int branchInstructionSize) {
         // TODO: complete the constructor
-        this.branchInstructionSize = 0;
+        this.branchInstructionSize = branchInstructionSize;
 
         // Initialize the BHR register with the given size and no default value
-        this.BHR = null;
+        Bit[] defaultValue = new Bit[BHRSize];
+        for (int i = 0; i < BHRSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        this.BHR = new SIPORegister("Gag BHR", BHRSize, defaultValue);
 
         // Initializing the PAPHT with BranchInstructionSize as PHT Selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PAPHT = null;
+        PAPHT = new PerAddressPredictionHistoryTable(branchInstructionSize, 1<<BHRSize, SCSize);
 
         // Initialize the SC register
-        SC = null;
+        defaultValue = new Bit[SCSize];
+        for (int i = 0; i < SCSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        SC = new SIPORegister("GAg SC", SCSize, defaultValue);
     }
 
     /**
