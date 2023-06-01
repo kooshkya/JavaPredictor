@@ -43,7 +43,6 @@ public class PAg implements BranchPredictor {
      */
     @Override
     public BranchResult predict(BranchInstruction instruction) {
-        // TODO: complete Task 1
         Bit[] BHRContent = PABHR.read(instruction.getInstructionAddress()).read();
         Bit[] defaultValue = new Bit[SC.getLength()];
         for (int i = 0; i < SC.getLength(); i++) {
@@ -60,7 +59,10 @@ public class PAg implements BranchPredictor {
      */
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
-        // TODO: complete Task 2
+        Bit[] countResult = CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING);
+        SC.load(countResult);
+        PHT.put(PABHR.read(instruction.getInstructionAddress()).read(), SC.read());
+        PABHR.read(instruction.getInstructionAddress()).insert(Bit.of(BranchResult.isTaken(actual)));
     }
 
     /**
