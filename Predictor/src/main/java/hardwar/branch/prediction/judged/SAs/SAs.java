@@ -19,31 +19,70 @@ public class SAs implements BranchPredictor {
     }
 
     public SAs(int BHRSize, int SCSize, int branchInstructionSize, int KSize, HashMode hashMode) {
-        // TODO: complete the constructor
-        this.branchInstructionSize = 0;
-        this.KSize = 0;
+        this.branchInstructionSize = branchInstructionSize;
+        this.KSize = KSize;
         this.hashMode = HashMode.XOR;
 
         // Initialize the PSBHR with the given bhr and branch instruction size
-        PSBHR = null;
+        PSBHR = new RegisterBank(KSize, BHRSize);
 
         // Initializing the PAPHT with BranchInstructionSize as PHT Selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PSPHT = null;
+        PSPHT = new PerAddressPredictionHistoryTable(KSize, 1<<BHRSize, SCSize);
 
         // Initialize the SC register
-        SC = null;
+        Bit[] defaultValue = new Bit[SCSize];
+        for (int i = 0; i < SCSize; i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        SC = new SIPORegister("PAg SC", SCSize, defaultValue);
     }
 
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
-        // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        ShiftRegister BHR = PSBHR.read(CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, HashMode.XOR));
+
+        Bit[] PCSegment = CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, hashMode);
+        Bit[] BHRSegment = CombinationalLogic.hash(BHR.read(), KSize, hashMode);
+        Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
+        for (int i = 0; i < key.length; i++) {
+            if (i < PCSegment.length) {
+                key[i] = PCSegment[i];
+            } else {
+                key[i] = BHRSegment[i - PCSegment.length];
+            }
+        }
+
+        Bit[] defaultValue = new Bit[SC.getLength()];
+        for (int i = 0; i < SC.getLength(); i++) {
+            defaultValue[i] = Bit.ZERO;
+        }
+        PSPHT.setDefault(key, defaultValue);
+        SC.load(PSPHT.get(key));
+
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
-        // TODO: complete Task 2
+        ShiftRegister BHR = PSBHR.read(CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, HashMode.XOR));
+        Bit[] countResult = CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING);
+        SC.load(countResult);
+
+        Bit[] PCSegment = CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, hashMode);
+        Bit[] BHRSegment = BHR.read();
+        Bit[] key = new Bit[PCSegment.length + BHRSegment.length];
+        for (int i = 0; i < key.length; i++) {
+            if (i < PCSegment.length) {
+                key[i] = PCSegment[i];
+            } else {
+                key[i] = BHRSegment[i - PCSegment.length];
+            }
+        }
+        PSPHT.put(key, SC.read());
+
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
+        PSBHR.write(CombinationalLogic.hash(branchInstruction.getInstructionAddress(), KSize, HashMode.XOR), BHR.read());
     }
 
 
